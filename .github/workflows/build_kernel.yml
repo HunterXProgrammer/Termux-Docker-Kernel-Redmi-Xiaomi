@@ -1,0 +1,39 @@
+name: Build Kernel For Redmi 9/9S/Pro/Pro Max
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: redmi-note-9
+
+jobs:
+  Build-Kernel:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          path: kernel-repo
+          fetch-depth: 1
+    
+      - name: Build Kernel For Redmi Note 9/9S/Pro/Pro Max
+        run: |
+          sudo apt update
+          sudo apt install -y git make gcc libssl-dev bc zip python2
+          cd kernel-repo
+          bash build.sh
+          echo "ZIPNAME=$(basename $(ls out/*\.zip | head -n 1))" >> $GITHUB_ENV
+
+      - name: Upload Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+           repo_token: ${{ secrets.GITHUB_TOKEN }}
+           file: kernel-repo/out/${{ env.ZIPNAME }}
+           asset_name: "TermuxDockerCompatible-KernelRedmi-9-9S-Pro-ProMax-miatoll.zip"
+           tag: "redmi-note-9"
+           release_name: "Redmi Note 9/9S/Pro/Pro Max"
+           body: "Termux Docker compatible kernel for Redmi Note 9/9S/Pro/Pro Max"
+           overwrite: true
