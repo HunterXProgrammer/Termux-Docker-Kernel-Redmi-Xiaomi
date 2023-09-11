@@ -78,7 +78,7 @@ And then install **tini**:-
 
 <br>
 
-# Building
+# Building The Kernel
 ### On Ubuntu and similar Linux distros -
 
     sudo apt update; cd
