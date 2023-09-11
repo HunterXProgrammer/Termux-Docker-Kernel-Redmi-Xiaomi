@@ -18,6 +18,7 @@ Check this list for the full comparison - **[COMPARISON.md](https://github.com/H
 
 <br>
 
+# Installing The Kernel
 ## 1. Installing/Flashing The Kernel
 Download the AnyKernel3 zip from **[releases](https://github.com/HunterXProgrammer/Termux-Docker-Kernel-Redmi-Xiaomi/releases)** and flash it using any kernel flasher app like **[HorizonKernelFlasher](https://github.com/libxzr/HorizonKernelFlasher)** or custom recovery. Reboot and enjoy.
 
@@ -79,10 +80,10 @@ And then install **tini**:-
 <br>
 
 # Building The Kernel
-### On Ubuntu and similar Linux distros -
+### <ins>On Ubuntu and similar Linux distros</ins> -
 
     sudo apt update; cd
-    sudo apt install -y git python3 python2 gcc bc libssl-dev make zip
+    sudo apt install -y git make gcc libssl-dev bc zip python2
     git clone --depth=1 https://github.com/HunterXProgrammer/Termux-Docker-Kernel-Redmi-Xiaomi
     cd Termux-Docker-Kernel-Redmi-Xiaomi
     bash build.sh
@@ -94,12 +95,12 @@ The compiled kernel/dtbo/dtc is compressed into an AnyKernel3 zip for portabilit
 
 <br>
 
-### Build Using GitHub Actions
+### <ins>Build Using GitHub Actions</ins>
 Fork the repo, enable GitHub Actions, open the Actions tab and run the workflow. Takes about 20mins to build the kernel and it'll be added to the releases section.
 
 <br>
 
-### <u>Build Using Termux</u>
+### <ins>Build Using Termux</ins>
 TODO
 
 <br>
