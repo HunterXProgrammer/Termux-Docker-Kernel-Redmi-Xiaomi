@@ -46,7 +46,7 @@ Download the AnyKernel3 zip from **[releases](https://github.com/HunterXProgramm
 
 ~~Open **Termux** and install **Docker**:-~~ **(Read important note)**
 
- ~~`yes | pkg upgrade -y && pkg install -y root-repo && pkg install -y docker`~~
+ ~~yes | pkg upgrade -y && pkg install -y root-repo && pkg install -y docker~~
 
 <br>
 
