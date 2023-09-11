@@ -56,7 +56,7 @@ Download the AnyKernel3 zip from **[releases](https://github.com/HunterXProgramm
 >
 > To fix it, **docker** needs to be compiled with a compatible version of Golang, ie:- **go1.20.5**.
 >
-> The **[workflow](https://github.com/HunterXProgrammer/Termux-Docker-Kernel-Redmi-Xiaomi/blob/main/.github/workflows/build_debian_package_docker.yml)** to create the correct debian(`.deb`) package via GitHub Actions using the official **[termux/package-builder](https://hub.docker.com/r/termux/package-builder)** Docker image.
+> GitHub Actions via **[workflow](https://github.com/HunterXProgrammer/Termux-Docker-Kernel-Redmi-Xiaomi/blob/main/.github/workflows/build_debian_package_docker.yml)** is used to create the correct debian(`.deb`) package using the official **[termux/package-builder](https://hub.docker.com/r/termux/package-builder)** Docker image.
 >
 > You can install the docker debian package compiled using **go1.20.5** from releases until it's fixed in the official **[termux-packages](https://github.com/termux/termux-packages)** repo.
 >
