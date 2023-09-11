@@ -99,7 +99,7 @@ Fork the repo, enable GitHub Actions, open the Actions tab and run the workflow.
 
 <br>
 
-### Build Using Termux
+### <u>Build Using Termux</u>
 TODO
 
 <br>
