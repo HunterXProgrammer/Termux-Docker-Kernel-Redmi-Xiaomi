@@ -1,0 +1,75 @@
+name: Build Tini Debian Package Used In Termux
+
+on:
+  workflow_dispatch:
+  
+concurrency:
+  group: build-debian-package-tini
+
+jobs: 
+  build-debian-package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        platform: [arm, aarch64, i686, x86_64]
+        package: [tini]
+
+    steps:
+      - name: Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates curl gnupg
+          sudo install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          sudo chmod a+r /etc/apt/keyrings/docker.gpg
+          echo "deb [arch=\"$(dpkg --print-architecture)\" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+ 
+      - name: Set Build Architecture
+        run: |
+          if [ "${{ matrix.platform }}" = "i686" ]; then
+            echo "arch_name=x86" >> $GITHUB_ENV
+          else
+            echo "arch_name=${{ matrix.platform }}" >> $GITHUB_ENV
+          fi
+
+      - name: Clone Termux-Packages Builder Repo
+        run: |
+          git clone https://github.com/termux/termux-packages $GITHUB_WORKSPACE/termux-packages
+
+      - name: Check If go1.20.5 Required
+        run: |
+          if [ "${{ matrix.package }}" == "docker" ]; then
+              cd $(mktemp -q -d)
+              rsync -a $GITHUB_WORKSPACE/termux-packages/ termux-packages
+              cd termux-packages
+              git reset --hard 21694ae13fc47b021262e1693ff76a559afd3930
+              rm -rf $GITHUB_WORKSPACE/termux-packages/packages/golang
+              mv packages/golang $GITHUB_WORKSPACE/termux-packages/packages/golang
+              cd $GITHUB_WORKSPACE/termux-packages
+              sed -i 's/local TERMUX_GO_VERSION=.*/local TERMUX_GO_VERSION=go1.20.5/' scripts/build/setup/termux_setup_golang.sh
+              sed -i 's/local TERMUX_GO_SHA256=.*/local TERMUX_GO_SHA256=d7ec48cde0d3d2be2c69203bc3e0a44de8660b9c09a6e85c4732a3f7dc442612/' scripts/build/setup/termux_setup_golang.sh
+          fi
+
+      - name: Build Debian Package For ${{ matrix.package }}
+        run: |
+          cd $GITHUB_WORKSPACE/termux-packages
+          CONTAINER_NAME=${{ matrix.package }}-${{ matrix.platform }} scripts/run-docker.sh ./build-package.sh -I -a ${{ matrix.platform }} -o build --format debian ${{ matrix.package }}
+          echo "deb_name=$(basename "$(cd build && ls ./*\.deb | head -n 1)")" >> $GITHUB_ENV
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "package_version=$(basename "$(cd build && ls ./*\.deb | head -n 1)" | sed -E "s/^${{ matrix.package }}_//" | sed -E "s/_${{ matrix.platform }}\.deb$//")" >> $GITHUB_ENV
+
+      - name: Upload Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+           repo_token: ${{ secrets.GITHUB_TOKEN }}
+           file: "${{ env.GITHUB_WORKSPACE }}/termux-packages/build/${{ env.deb_name }}"
+           asset_name: "${{ matrix.package }}-${{ env.arch_name }}.deb"
+           tag: "debian-package-${{ matrix.package }}"
+           release_name: "Termux Debian Package For ${{ matrix.package }}"
+           body: "Version - ${{ env.package_version }}"
+           make_latest: false
+           overwrite: true
