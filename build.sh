@@ -11,10 +11,10 @@ KERNEL_DIR="$(pwd)"
 ##----------------------------------------------------------##
 # Device Name and Model
 MODEL=Xiaomi
-DEVICE=MiAtoll
+DEVICE="MiAtoll"
 
 # Kernel Defconfig
-DEFCONFIG=vendor/miatoll-perf_defconfig
+DEFCONFIG="vendor/miatoll-perf_defconfig"
 
 # Output Directory
 OUT="./out"
@@ -25,25 +25,33 @@ DTBO="$OUT/arch/arm64/boot/dtbo.img"
 DTB="$OUT/arch/arm64/boot/dts/qcom/cust-atoll-ab.dtb"
 
 # Verbose Build
-VERBOSE=0
+VERBOSE="0"
 
 # Kernel Version
-KERVER=$(make kernelversion)
+KERVER="$(make kernelversion)"
 
-COMMIT_HEAD=$(git log --oneline -1)
+COMMIT_HEAD="$(git log --oneline -1)"
 
 # Date and Time
-DATE=$(TZ=Asia/Kolkata date +"%Y%m%d-%T")
-TIME=$(date +"%F%S")
+DATE="$(TZ=Asia/Kolkata date +"%Y%m%d-%T")"
+TIME="$(date +"%F%S")"
 
 # Specify Final Zip Name
-ZIPNAME=TermuxDockerCompatible-RedmiKernel
-FINAL_ZIP=${ZIPNAME}-${TIME}.zip
+ZIPNAME="TermuxDockerCompatible-RedmiKernel"
+FINAL_ZIP="${ZIPNAME}-${TIME}.zip"
 
 ##----------------------------------------------------------##
 # Specify compiler.
 
-COMPILER=proton
+if [ -z "$1" ]; then
+    COMPILER="proton"
+else
+    if [ "$1" = "termux" ]; then
+        COMPILER="clang+llvm-16.0.6-aarch64-linux-gnu"
+    else
+        COMPILER="$1"
+    fi
+fi
 
 ##----------------------------------------------------------##
 # Specify Linker
@@ -127,7 +135,19 @@ function cloneTC() {
 	    git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git --depth=1 gcc
 	    git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git  --depth=1 gcc32
 	    export PATH="${KERNEL_DIR}/aosp-clang/bin:${KERNEL_DIR}/gcc/bin:${KERNEL_DIR}/gcc32/bin:${PATH}"
-	fi
+	elif [ "$COMPILER" = "clang+llvm-16.0.6-aarch64-linux-gnu" ]; then
+	    if [ ! -d "$HOME/$COMPILER" ]; then
+	        echo " Downloading $COMPILER Toolchain"
+	        cd $(mktemp -q -d)
+	        curl -SL -o "$HOME/${COMPILER}.tar.xz" "https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.6/${COMPILER}.tar.xz"
+	        tar -xvf ${COMPILER}.tar.xz -C "$HOME"
+	        rm "$COMPILER"
+	    fi
+	    export PATH="$HOME/$COMPILER/bin:$PATH"
+	else
+	    echo "Invalid ToolChain Selected"
+	    exit 1
+    fi
 }
 
 ##------------------------------------------------------##
@@ -187,11 +207,11 @@ function compile() {
 	mkdir -p $OUT
 	make O=$OUT ARCH=arm64 ${DEFCONFIG}
 	if [ -d "$HOME/$COMPILER" ] && [ "$COMPILER" != "gcc64" ] && [ "$COMPILER" != "aosp-clang" ]; then
-	    make -j$(nproc --all) O=$OUT \
+	    make -j$PROCS O=$OUT \
 	    ARCH=arm64 $COMPILE_OPTIONS \
 	    V=$VERBOSE 2>&1 | tee error.log
 	elif [ -d ${KERNEL_DIR}/gcc64 ]; then
-	    make -kj$(nproc --all) O=$OUT \
+	    make -kj$PROCS O=$OUT \
 	    ARCH=arm64 \
 	    CROSS_COMPILE_ARM32=arm-eabi- \
 	    CROSS_COMPILE=aarch64-elf- \
@@ -204,7 +224,7 @@ function compile() {
 	    OBJSIZE=llvm-size \
 	    V=$VERBOSE 2>&1 | tee error.log
     elif [ -d ${KERNEL_DIR}/aosp-clang ]; then
-        make -kj$(nproc --all) O=$OUT \
+        make -kj$PROCS O=$OUT \
 	    ARCH=arm64 \
 	    CC=clang \
         HOSTCC=clang \
@@ -227,7 +247,7 @@ function compile() {
 	    echo "Kernel Compilation Failed Due To Errors"
 	    exit 1
 	else
-      	echo " Kernel Compilation Finished. Started Zipping"
+	    echo " Kernel Compilation Finished. Started Zipping"
 	fi
 }
 
