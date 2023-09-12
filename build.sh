@@ -138,10 +138,10 @@ function cloneTC() {
 	elif [ "$COMPILER" = "clang+llvm-16.0.6-aarch64-linux-gnu" ]; then
 	    if [ ! -d "$HOME/$COMPILER" ]; then
 	        echo " Downloading $COMPILER Toolchain"
-	        cd $(mktemp -q -d)
-	        curl -SL -o "$HOME/${COMPILER}.tar.xz" "https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.6/${COMPILER}.tar.xz"
+	        cd "$(mktemp -q -d)"
+	        curl -SL -o "${COMPILER}.tar.xz" "https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.6/${COMPILER}.tar.xz"
 	        tar -xvf ${COMPILER}.tar.xz -C "$HOME"
-	        rm "$COMPILER"
+	        rm "${COMPILER}.tar.xz"
 	    fi
 	    export PATH="$HOME/$COMPILER/bin:$PATH"
 	else
