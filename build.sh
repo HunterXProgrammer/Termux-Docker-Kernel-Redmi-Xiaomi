@@ -203,7 +203,7 @@ function compile() {
     echo -e "\nKernel Version : $KERVER\nDate : $(TZ=Asia/Kolkata date)\nDevice : $MODEL [$DEVICE]\n Core Count : $PROCS\nCompiler Used : $KBUILD_COMPILER_STRING\n"
 	# Compile
 	cd "${KERNEL_DIR}"
-	rm -rf $OUT &>/dev/null
+	# rm -rf $OUT &>/dev/null
 	mkdir -p $OUT
 	make O=$OUT ARCH=arm64 ${DEFCONFIG}
 	if [ -d "$HOME/$COMPILER" ] && [ "$COMPILER" != "gcc64" ] && [ "$COMPILER" != "aosp-clang" ]; then
